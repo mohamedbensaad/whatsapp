@@ -1,8 +1,8 @@
-name: WhatsApp Auto Reply
+name: WhatsApp Reply Bot
 
 on:
   schedule:
-    - cron: "*/5 * * * *"   # every 5 minutes
+    - cron: "*/5 * * * *"   # كل 5 دقائق
   workflow_dispatch:
 
 permissions:
@@ -29,10 +29,10 @@ jobs:
       - name: Run reply bot
         run: node reply.js
 
-      - name: Save replied + session
+      - name: Save session + replied
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git add session replied.json
-          git commit -m "update reply session $(date +%F-%T)" || echo "No changes"
+          git commit -m "reply update $(date +%F-%T)" || echo "No changes"
           git push
