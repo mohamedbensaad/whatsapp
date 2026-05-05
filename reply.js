@@ -21,22 +21,29 @@ client.on("ready", async () => {
   console.log("✅ Bot Ready");
 
   const chats = await client.getChats();
+  const now = Date.now();
 
   for (const chat of chats) {
     if (!chat.isUser) continue;
 
-    const messages = await chat.fetchMessages({ limit: 3 });
+    const messages = await chat.fetchMessages({ limit: 1 });
+    const msg = messages[0];
 
-    const lastMsg = messages[messages.length - 1];
-    if (!lastMsg || lastMsg.fromMe) continue;
+    if (!msg) continue;
+    if (msg.fromMe) continue;
 
-    const text = lastMsg.body.toLowerCase();
+    // ⏳ check if message is recent (last 5 min)
+    const msgTime = msg.timestamp * 1000;
+
+    if (now - msgTime > 5 * 60 * 1000) continue;
+
+    const text = msg.body.toLowerCase();
 
     const keywords = ["hi", "hello", "salam", "hey"];
 
     if (!keywords.some(k => text.includes(k))) continue;
 
-    // ⏳ random delay (3s → 8s)
+    // random delay (3–8 sec)
     const delay = 3000 + Math.random() * 5000;
     console.log(`⏳ waiting ${Math.round(delay)}ms`);
     await sleep(delay);
@@ -45,11 +52,10 @@ client.on("ready", async () => {
 
     console.log("↩ replied to:", chat.id.user);
 
-    // small delay
     await sleep(1500);
   }
 
-  console.log("✅ Done");
+  console.log("✅ Done replying");
   process.exit(0);
 });
 
