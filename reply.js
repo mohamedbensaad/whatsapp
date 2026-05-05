@@ -1,7 +1,6 @@
 import pkg from "whatsapp-web.js";
 const { Client, LocalAuth } = pkg;
 
-import qrcode from "qrcode-terminal";
 import fs from "fs-extra";
 
 const SESSION_DIR = "./session";
@@ -9,7 +8,7 @@ const REPLIED_FILE = "./replied.json";
 
 const REPLY_TEXT = "Hi 👋 how are you 😊";
 
-// load replied messages
+// تحميل الرسائل لي تردينا عليها
 let replied = [];
 if (await fs.pathExists(REPLIED_FILE)) {
   replied = await fs.readJson(REPLIED_FILE);
@@ -18,7 +17,7 @@ if (await fs.pathExists(REPLIED_FILE)) {
 // init client
 const client = new Client({
   authStrategy: new LocalAuth({
-    clientId: "main",
+    clientId: "main", // نفس session ديال send.js
     dataPath: SESSION_DIR
   }),
   puppeteer: {
@@ -27,42 +26,41 @@ const client = new Client({
   }
 });
 
-// QR (only first time)
-client.on("qr", qr => {
-  console.log("🔐 Scan QR:");
-  qrcode.generate(qr, { small: true });
-});
-
-// ready
 client.on("ready", () => {
-  console.log("✅ WhatsApp Ready");
+  console.log("✅ Ready for reply");
+
+  // ⚠️ مهم: فـ GitHub Actions خاصنا نجيب آخر الرسائل (مشّي event فقط)
+  autoReply();
 });
 
-// message listener
-client.on("message", async msg => {
-  try {
-    const id = msg.id._serialized;
+// ===== SMART FETCH (باش يخدم ف GitHub Actions) =====
+async function autoReply() {
+  const chats = await client.getChats();
 
-    // skip if already replied
-    if (replied.includes(id)) return;
+  for (const chat of chats) {
+    if (!chat.isUser) continue;
 
-    // skip your own messages
-    if (msg.fromMe) return;
+    const messages = await chat.fetchMessages({ limit: 5 });
 
-    // only private chats
-    if (!msg.from.endsWith("@c.us")) return;
+    for (const msg of messages) {
+      const id = msg.id._serialized;
 
-    // reply
-    await msg.reply(REPLY_TEXT);
-    console.log("↩ Replied to:", msg.from);
+      if (replied.includes(id)) continue;
+      if (msg.fromMe) continue;
 
-    // save
-    replied.push(id);
-    await fs.writeJson(REPLIED_FILE, replied, { spaces: 2 });
+      await chat.sendMessage(REPLY_TEXT);
+      console.log("↩ Replied to:", chat.id.user);
 
-  } catch (err) {
-    console.log("❌ Error:", err.message);
+      replied.push(id);
+      await fs.writeJson(REPLIED_FILE, replied, { spaces: 2 });
+
+      // delay صغير باش ماتبانش spam
+      await new Promise(r => setTimeout(r, 3000));
+    }
   }
-});
+
+  console.log("✅ Reply job done");
+  process.exit(0);
+}
 
 client.initialize();
