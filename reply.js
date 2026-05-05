@@ -1,25 +1,21 @@
 import pkg from "whatsapp-web.js";
 const { Client, LocalAuth } = pkg;
 
-const SESSION_DIR = "./session";
-
 const client = new Client({
   authStrategy: new LocalAuth({
-    clientId: "main",
-    dataPath: SESSION_DIR
+    clientId: "main"
   }),
   puppeteer: {
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
-      "--disable-dev-shm-usage",
-      "--disable-gpu"
+      "--disable-dev-shm-usage"
     ],
     headless: true
   }
 });
 
-const delay = (ms) => new Promise(r => setTimeout(r, ms));
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
 client.on("ready", async () => {
   console.log("✅ Bot Ready");
@@ -29,32 +25,31 @@ client.on("ready", async () => {
   for (const chat of chats) {
     if (!chat.isUser) continue;
 
-    const messages = await chat.fetchMessages({ limit: 5 });
+    const messages = await chat.fetchMessages({ limit: 3 });
 
-    for (const msg of messages) {
-      if (msg.fromMe) continue;
+    const lastMsg = messages[messages.length - 1];
+    if (!lastMsg || lastMsg.fromMe) continue;
 
-      const text = msg.body.toLowerCase();
+    const text = lastMsg.body.toLowerCase();
 
-      const keywords = ["hi", "hello", "salam", "hey"];
+    const keywords = ["hi", "hello", "salam", "hey"];
 
-      if (!keywords.some(k => text.includes(k))) continue;
+    if (!keywords.some(k => text.includes(k))) continue;
 
-      // random delay (3s - 8s)
-      const waitTime = 3000 + Math.floor(Math.random() * 5000);
-      console.log(`⏳ waiting ${waitTime}ms`);
-      await delay(waitTime);
+    // ⏳ random delay (3s → 8s)
+    const delay = 3000 + Math.random() * 5000;
+    console.log(`⏳ waiting ${Math.round(delay)}ms`);
+    await sleep(delay);
 
-      await chat.sendMessage("Hi 👋 how are you 😊");
+    await chat.sendMessage("Hi 👋 كيف داير؟ 😊");
 
-      console.log("↩ replied to:", chat.id.user);
+    console.log("↩ replied to:", chat.id.user);
 
-      // small delay between users
-      await delay(2000);
-    }
+    // small delay
+    await sleep(1500);
   }
 
-  console.log("✅ Done replying, exiting...");
+  console.log("✅ Done");
   process.exit(0);
 });
 
