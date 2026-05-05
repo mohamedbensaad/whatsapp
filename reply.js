@@ -23,10 +23,15 @@ const client = new Client({
     clientId: "main",
     dataPath: SESSION_DIR
   }),
-  puppeteer: {
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    headless: true
-  }
+puppeteer: {
+  headless: true,
+  args: [
+    "--no-sandbox",
+    "--disable-setuid-sandbox",
+    "--disable-dev-shm-usage",
+    "--disable-gpu"
+  ]
+}
 });
 
 client.on("ready", async () => {
