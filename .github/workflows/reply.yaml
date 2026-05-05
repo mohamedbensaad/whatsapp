@@ -2,7 +2,7 @@ name: WhatsApp Reply Bot
 
 on:
   schedule:
-    - cron: "*/5 * * * *"   # كل 5 دقائق
+    - cron: "*/5 * * * *"
   workflow_dispatch:
 
 permissions:
@@ -15,8 +15,6 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-        with:
-          persist-credentials: true
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -26,15 +24,12 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Install Chrome dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libnss3 libatk-bridge2.0-0 libx11-xcb1 libxcomposite1 \
+            libxdamage1 libxrandr2 libgbm1 libgtk-3-0 libasound2
+
       - name: Run reply bot
         run: node reply.js
-
-      - name: Save session + replied
-        run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git add session/session-main || true
-          git add replied.json || true
-          git add memory.json || true
-          git commit -m "reply update $(date +%F-%T)" || echo "No changes"
-          git push
