@@ -1,2 +1,3 @@
-2026/05/05-18:02:16.198 97a Creating DB /home/runner/work/whatsapp/whatsapp/session/session-main/Default/Local Storage/leveldb since it was missing.
-2026/05/05-18:02:16.213 97a Reusing MANIFEST /home/runner/work/whatsapp/whatsapp/session/session-main/Default/Local Storage/leveldb/MANIFEST-000001
+2026/05/05-18:54:35.540 96b Reusing MANIFEST /home/runner/work/whatsapp/whatsapp/session/session-main/Default/Local Storage/leveldb/MANIFEST-000001
+2026/05/05-18:54:35.546 96b Recovering log #3
+2026/05/05-18:54:35.547 96b Reusing old log /home/runner/work/whatsapp/whatsapp/session/session-main/Default/Local Storage/leveldb/000003.log 
